@@ -3,7 +3,7 @@ const log = document.getElementById("log");
 const audioPlayer = document.getElementById("audioPlayer");
 
 // Replace with your guitar song mp3 URL
-const songUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+const songUrl = "https://cdn.pixabay.com/download/audio/2022/03/20/audio_8a5bc374aa.mp3?filename=pop-rock-12431.mp3";
 
 let recognition;
 let listening = false;
