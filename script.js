@@ -1,28 +1,69 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const contactForm = document.getElementById("contactForm");
-  const formResponse = document.getElementById("formResponse");
+const talkBtn = document.getElementById("talkBtn");
+const log = document.getElementById("log");
+const audioPlayer = document.getElementById("audioPlayer");
 
-  contactForm.addEventListener("submit", (e) => {
-    e.preventDefault();
+// Replace with your guitar song mp3 URL
+const songUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
 
-    // Simple validation (HTML required attributes already help)
-    const name = contactForm.name.value.trim();
-    const email = contactForm.email.value.trim();
-    const message = contactForm.message.value.trim();
+let recognition;
+let listening = false;
 
-    if (!name || !email || !message) {
-      formResponse.style.color = "red";
-      formResponse.textContent = "Please fill in all fields.";
-      return;
+function initRecognition() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    alert('Speech Recognition not supported in this browser.');
+    return null;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recog = new SpeechRecognition();
+  recog.lang = 'en-US';
+  recog.interimResults = false;
+  recog.continuous = false;
+
+  recog.onresult = event => {
+    const transcript = event.results[0][0].transcript.toLowerCase();
+    log.textContent = `You said: "${transcript}"`;
+    if (transcript.includes('hello')) {
+      playSong();
+    } else {
+      log.textContent = 'You did NOT say "hello". Try again.';
     }
+  };
 
-    // Dummy form submission simulation
-    formResponse.style.color = "#22c55e";
-    formResponse.textContent = "Sending message...";
+  recog.onerror = event => {
+    log.textContent = 'Error: ' + event.error;
+    listening = false;
+    talkBtn.disabled = false;
+    talkBtn.textContent = 'TALK';
+  };
 
-    setTimeout(() => {
-      formResponse.textContent = "Thanks for reaching out! We'll get back to you soon.";
-      contactForm.reset();
-    }, 1500);
-  });
+  recog.onend = () => {
+    listening = false;
+    talkBtn.disabled = false;
+    talkBtn.textContent = 'TALK';
+  };
+
+  return recog;
+}
+
+function playSong() {
+  audioPlayer.src = songUrl;
+  audioPlayer.volume = 1.0;
+  audioPlayer.style.display = 'block';
+  audioPlayer.play();
+  log.textContent = 'Playing your guitar song!';
+}
+
+talkBtn.addEventListener('click', () => {
+  if (listening) return;
+
+  if (!recognition) {
+    recognition = initRecognition();
+    if (!recognition) return;
+  }
+
+  recognition.start();
+  listening = true;
+  talkBtn.disabled = true;
+  talkBtn.textContent = 'Listening...';
+  log.textContent = 'Listening... say "hello"';
 });
